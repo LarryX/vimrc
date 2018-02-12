@@ -1,5 +1,5 @@
 ## suspend vim
-    
+
 `ctrl+z`: suspend vim and get back to your shell
 `fg`: resume(bring to foreground) your suspend vim
 `:sh`: start a subshell (as configured by `:set shell?`)

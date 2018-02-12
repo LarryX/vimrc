@@ -15,6 +15,7 @@ keymap similar with spacemacs
     * Install the required dependencies:
     ```bash
     # ubuntu
+    sudo apt-get install curl
     sudo apt-get install exuberant-ctags git ack-grep
     sudo apt-get install silversearcher-ag
     sudo pip install pep8 flake8 pyflakes isort yapf
@@ -32,7 +33,7 @@ keymap similar with spacemacs
 
     ```bash
     cd
-    git clone https://github.com/ovsoil/vimrc.git ~/repo/vimrc
+    git clone https://github.com/larryx/vimrc.git ~/repo/vimrc
     ln -s repo/vimrc/vimrc-dev ~/.vimrc
     ```
 3. Open vim and it will continue the installation by itself. Wait for it to finish... and done! You now have your new shiny powerful vim :)
