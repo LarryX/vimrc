@@ -37,7 +37,7 @@ keymap similar with spacemacs
     eg:
 
     ```bash
-    git clone https://github.com/ovsoil/vimrc.git $HOME/repo/vimrc
+    git clone https://github.com/larryx/vimrc.git $HOME/repo/vimrc
     # vim
     ln -s $HOME/repo/vimrc/vimrc-dev $HOME/.vimrc
     # neovim
