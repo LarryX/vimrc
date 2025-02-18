@@ -1,10 +1,9 @@
 " ============================================================================
 " simple vim config without any plugins
-" Maintainer: ovsoil
-"       hxyumail@gmail.com
-"       http://ovsoil.com
+" Maintainer: AI
+"       
 " Create Date:
-"       01/09/2015
+"       02/18/2025
 " ============================================================================
 
 " leader
@@ -139,22 +138,6 @@ hi! link ShowMarksHLu DiffChange
 " status line
 set laststatus=2   " Always show the status line - use 2 lines for the status bar
 set statusline=%<%f\ %h%m%r%=%k[%{(&fenc==\"\")?&enc:&fenc}%{(&bomb?\",BOM\":\"\")}]\ %-14.(%l,%c%V%)\ %P
-" set statusline=
-" set statusline+=%2*%-3.3n%0*/ " buffer number
-" set statusline+=%f/ " file name
-" set statusline+=%h%1*%m%r%w%0* " flag
-" set statusline+=[
-" if v:version >= 600
-"     set statusline+=%{strlen(&ft)?&ft:'none'}, " filetype
-"     set statusline+=%{&encoding}, " encoding
-" endif
-" set statusline+=%{&fileformat}] " file format
-" if filereadable(expand("$VIM/vimfiles/plugin/vimbuddy.vim"))
-"     set statusline+=/ %{VimBuddy()} " vim buddy
-" endif
-" set statusline+=%= " right align
-" set statusline+=%2*0x%-8B/ " current char
-"set statusline+=%-14.(%l,%c%V%)/ %<%P " offset
 
 
 " ============================ specific file type ===========================
@@ -165,20 +148,17 @@ autocmd BufRead,BufNew *.md,*.mkd,*.markdown  set filetype=markdown.mkd
 
 autocmd BufNewFile *.sh,*.py exec ":call AutoSetFileHead()"
 function! AutoSetFileHead()
-    " .sh
-    if &filetype == 'sh'
-        call setline(1, "\#!/bin/bash")
+    if line('$') == 1 && getline(1) == ''
+        if &filetype == 'sh'
+            call setline(1, "\#!/bin/bash")
+        elseif &filetype == 'python'
+            call setline(1, "\#!/usr/bin/env python")
+            call append(1, "\# encoding: utf-8")
+        endif
+        normal G
+        normal o
+        normal o
     endif
-
-    " python
-    if &filetype == 'python'
-        call setline(1, "\#!/usr/bin/env python")
-        call append(1, "\# encoding: utf-8")
-    endif
-
-    normal G
-    normal o
-    normal o
 endfunc
 
 autocmd FileType c,cpp,java,go,php,javascript,puppet,python,rust,twig,xml,yml,perl autocmd BufWritePre <buffer> :call <SID>StripTrailingWhitespaces()
@@ -204,35 +184,13 @@ map <C-l> <C-W>l
 nnoremap <F2> :set nu! nu?<CR>
 nnoremap <F3> :set list! list?<CR>
 nnoremap <F4> :set wrap! wrap?<CR>
-set pastetoggle=<F5>            "    when in insert mode, press <F5> to go to
-                                "    paste mode, where you can paste mass data
-                                "    that won't be autoindented
+set pastetoggle=<F5>
 au InsertLeave * set nopaste
 nnoremap <F6> :exec exists('syntax_on') ? 'syn off' : 'syn on'<CR>
 
-" kj replace Esc
-" inoremap kj <Esc>
-
-" Quickly close the current window
-" nnoremap <leader>q :q<CR>
-" Quickly save the current file
-" nnoremap <leader>w :w<CR>
-
-" select all
-" map <Leader>sa ggVG"
-
-" remap U to <C-r> for easier redo
-nnoremap U <C-r>
-
 " Swap implementations of ` and ' jump to markers
-" By default, ' jumps to the marked line, ` jumps to the marked line and
-" column, so swap them
 nnoremap ' `
 nnoremap ` '
-
-" switch # *
-" nnoremap # *
-" nnoremap * #
 
 "Keep search pattern at the center of the screen."
 nnoremap <silent> n nzz
@@ -242,10 +200,9 @@ nnoremap <silent> # #zz
 nnoremap <silent> g* g*zz
 
 " remove highlight
-" noremap <silent><leader>/ :nohls<CR>
 nnoremap <leader><cr> :nohl<cr>
 
-"Reselect visual block after indent/outdent.调整缩进后自动选中，方便再次操作
+"Reselect visual block after indent/outdent
 vnoremap < <gv
 vnoremap > >gv
 
@@ -343,7 +300,7 @@ vnoremap <leader>h :<C-U>call <SID>VSetSearch('/')<cr>/<C-R>/<cr>N
 vnoremap <leader>sr ""y:%s/<C-R>=escape(@", '/\')<cr>//gc<left><Left><Left>
 vnoremap <leader>sR ""y:%s/<C-R>=escape(@", '/\')<cr>//g<Left><Left>
 nnoremap <leader>sr :%s/<C-R><C-W>//gc"<left><left><left><left>
-nnoremap <leader>sr :%s/<C-R><C-W>//g"<left><left><left>
+nnoremap <leader>sR :%s/<C-R><C-W>//g"<left><left><left>
 
 " grep the word at cursor in current dir
 nnoremap <leader>sw :grep! "\b<C-R><C-W>\b"<cr>:cw<cr>
