@@ -20,7 +20,6 @@ if (g:system=="mac")
   let g:python3_host_prog = '~/.pyenv/versions/neovim/bin/python3'
 endif
 
-set nocompatible
 " Use utf-8 if Vim was complied with multi-byte support
 if has("multi_byte")
   if &termencoding == ""
@@ -40,7 +39,6 @@ endif
 
 " leader
 let mapleader = "\<Space>"
-let g:mapleader = "\<Space>"
 
 " base
 set nocompatible                " don't bother with vi compatibility
@@ -71,8 +69,6 @@ call dein#add('lifepillar/vim-gruvbox8')
 
 call dein#add('Shougo/defx.nvim')
 if has('nvim')
-  call dein#add('roxma/nvim-yarp')
-  call dein#add('roxma/vim-hug-neovim-rpc')
   call dein#add('nvim-lua/plenary.nvim')
   call dein#add('sindrets/diffview.nvim')
 endif
@@ -281,7 +277,6 @@ vmap <leader>pp "+p
 nmap <leader>pP "+P
 vmap <leader>pP "+P
 map <leader>p "0p
-au InsertLeave * set nopaste                    " Disbale paste mode when leaving insert mode
 "nmap <leader>= <Esc>:%!python -m json.tool<cr>
 autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '+' | execute 'OSCYankReg +' | endif
 
@@ -348,7 +343,7 @@ nmap <silent> <leader>fj :Defx -search-recursive=`expand('%:p')` <cr>
 
 nmap <leader>bn :bnext<cr>
 nmap <leader>bp :bprevious<cr>
-nmap <leader>bd ::bdelete<cr>
+nmap <leader>bd :bdelete<cr>
 nmap <leader>b<tab> :b#<cr>
 
 nmap <leader>tb :BlamerToggle <cr>
@@ -786,8 +781,8 @@ nmap <leader>gf :cs find f <C-R>=expand("<cfile>")<cr><cr>:copen<cr>    " Find t
 nmap <leader>gi :cs find i ^<C-R>=expand("<cfile>")<cr>$<cr>:copen<cr>  " Find files #including this file
 nmap <leader>ga :cs find a <C-R>=expand("<cfile>")<cr><cr>:copen<cr>    " Find places where this symbol is assigned a value
 
-if has('nvim') == 0
-  lua require('lua/plugins/diffview')
+if has('nvim')
+  lua require('plugins.diffview')
 endif
 
 let tlist_pyrex_settings='python;c:classe;m:memder;f:function'

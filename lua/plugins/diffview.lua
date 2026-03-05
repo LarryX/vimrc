@@ -1,107 +1,99 @@
--- Lua
-local cb = require'diffview.config'.diffview_callback
+-- Diffview.nvim configuration (modern API, v0.4+)
+local actions = require("diffview.actions")
 
-require'diffview'.setup {
-  diff_binaries = false,    -- Show diffs for binaries
-  enhanced_diff_hl = false, -- See ':h diffview-config-enhanced_diff_hl'
-  use_icons = true,         -- Requires nvim-web-devicons
-  icons = {                 -- Only applies when use_icons is true.
-    folder_closed = "",
-    folder_open = "",
+require("diffview").setup({
+  diff_binaries = false,
+  enhanced_diff_hl = false,
+  use_icons = true,
+  icons = {
+    folder_closed = "",
+    folder_open = "",
   },
   signs = {
-    fold_closed = "",
-    fold_open = "",
+    fold_closed = "",
+    fold_open = "",
   },
   file_panel = {
-    position = "left",                  -- One of 'left', 'right', 'top', 'bottom'
-    width = 35,                         -- Only applies when position is 'left' or 'right'
-    height = 10,                        -- Only applies when position is 'top' or 'bottom'
-    listing_style = "tree",             -- One of 'list' or 'tree'
-    tree_options = {                    -- Only applies when listing_style is 'tree'
-      flatten_dirs = true,              -- Flatten dirs that only contain one single dir
-      folder_statuses = "only_folded",  -- One of 'never', 'only_folded' or 'always'.
+    listing_style = "tree",
+    win_config = {
+      position = "left",
+      width = 35,
+    },
+    tree_options = {
+      flatten_dirs = true,
+      folder_statuses = "only_folded",
     },
   },
   file_history_panel = {
-    position = "bottom",
-    width = 35,
-    height = 16,
+    win_config = {
+      position = "bottom",
+      height = 16,
+    },
     log_options = {
-      max_count = 256,      -- Limit the number of commits
-      follow = false,       -- Follow renames (only for single file)
-      all = false,          -- Include all refs under 'refs/' including HEAD
-      merges = false,       -- List only merge commits
-      no_merges = false,    -- List no merge commits
-      reverse = false,      -- List commits in reverse order
+      git = {
+        single_file = { max_count = 256, follow = false },
+        multi_file  = { max_count = 256 },
+      },
     },
   },
-  default_args = {    -- Default args prepended to the arg-list for the listed commands
-    DiffviewOpen = {},
-    DiffviewFileHistory = {},
-  },
-  hooks = {},         -- See ':h diffview-config-hooks'
-  key_bindings = {
-    disable_defaults = false,                   -- Disable the default key bindings
-    -- The `view` bindings are active in the diff buffers, only when the current
-    -- tabpage is a Diffview.
+  keymaps = {
     view = {
-      ["<tab>"]      = cb("select_next_entry"),  -- Open the diff for the next file
-      ["<s-tab>"]    = cb("select_prev_entry"),  -- Open the diff for the previous file
-      ["gf"]         = cb("goto_file"),          -- Open the file in a new split in previous tabpage
-      ["<C-w><C-f>"] = cb("goto_file_split"),    -- Open the file in a new split
-      ["<C-w>gf"]    = cb("goto_file_tab"),      -- Open the file in a new tabpage
-      ["<leader>e"]  = cb("focus_files"),        -- Bring focus to the files panel
-      ["<leader>td"]  = cb("toggle_files"),       -- Toggle the files panel.
+      { "n", "<tab>",      actions.select_next_entry },
+      { "n", "<s-tab>",    actions.select_prev_entry },
+      { "n", "gf",         actions.goto_file_edit },
+      { "n", "<C-w><C-f>", actions.goto_file_split },
+      { "n", "<C-w>gf",    actions.goto_file_tab },
+      { "n", "<leader>e",  actions.focus_files },
+      { "n", "<leader>td", actions.toggle_files },
     },
     file_panel = {
-      ["j"]             = cb("next_entry"),           -- Bring the cursor to the next file entry
-      ["<down>"]        = cb("next_entry"),
-      ["k"]             = cb("prev_entry"),           -- Bring the cursor to the previous file entry.
-      ["<up>"]          = cb("prev_entry"),
-      ["<cr>"]          = cb("select_entry"),         -- Open the diff for the selected entry.
-      ["l"]             = cb("select_entry"),
-      ["o"]             = cb("select_entry"),
-      ["<2-LeftMouse>"] = cb("select_entry"),
-      ["-"]             = cb("toggle_stage_entry"),   -- Stage / unstage the selected entry.
-      ["S"]             = cb("stage_all"),            -- Stage all entries.
-      ["U"]             = cb("unstage_all"),          -- Unstage all entries.
-      ["X"]             = cb("restore_entry"),        -- Restore entry to the state on the left side.
-      ["R"]             = cb("refresh_files"),        -- Update stats and entries in the file list.
-      ["<tab>"]         = cb("select_next_entry"),
-      ["<s-tab>"]       = cb("select_prev_entry"),
-      ["gf"]            = cb("goto_file"),
-      ["<C-w><C-f>"]    = cb("goto_file_split"),
-      ["<C-w>gf"]       = cb("goto_file_tab"),
-      ["i"]             = cb("listing_style"),        -- Toggle between 'list' and 'tree' views
-      ["f"]             = cb("toggle_flatten_dirs"),  -- Flatten empty subdirectories in tree listing style.
-      ["<leader>e"]     = cb("focus_files"),
-      ["<leader>td"]     = cb("toggle_files"),
+      { "n", "j",             actions.next_entry },
+      { "n", "<down>",        actions.next_entry },
+      { "n", "k",             actions.prev_entry },
+      { "n", "<up>",          actions.prev_entry },
+      { "n", "<cr>",          actions.select_entry },
+      { "n", "l",             actions.select_entry },
+      { "n", "o",             actions.select_entry },
+      { "n", "<2-LeftMouse>", actions.select_entry },
+      { "n", "-",             actions.toggle_stage_entry },
+      { "n", "S",             actions.stage_all },
+      { "n", "U",             actions.unstage_all },
+      { "n", "X",             actions.restore_entry },
+      { "n", "R",             actions.refresh_files },
+      { "n", "<tab>",         actions.select_next_entry },
+      { "n", "<s-tab>",       actions.select_prev_entry },
+      { "n", "gf",            actions.goto_file_edit },
+      { "n", "<C-w><C-f>",    actions.goto_file_split },
+      { "n", "<C-w>gf",       actions.goto_file_tab },
+      { "n", "i",             actions.listing_style },
+      { "n", "f",             actions.toggle_flatten_dirs },
+      { "n", "<leader>e",     actions.focus_files },
+      { "n", "<leader>td",    actions.toggle_files },
     },
     file_history_panel = {
-      ["g!"]            = cb("options"),            -- Open the option panel
-      ["<C-A-d>"]       = cb("open_in_diffview"),   -- Open the entry under the cursor in a diffview
-      ["y"]             = cb("copy_hash"),          -- Copy the commit hash of the entry under the cursor
-      ["zR"]            = cb("open_all_folds"),
-      ["zM"]            = cb("close_all_folds"),
-      ["j"]             = cb("next_entry"),
-      ["<down>"]        = cb("next_entry"),
-      ["k"]             = cb("prev_entry"),
-      ["<up>"]          = cb("prev_entry"),
-      ["<cr>"]          = cb("select_entry"),
-      ["o"]             = cb("select_entry"),
-      ["<2-LeftMouse>"] = cb("select_entry"),
-      ["<tab>"]         = cb("select_next_entry"),
-      ["<s-tab>"]       = cb("select_prev_entry"),
-      ["gf"]            = cb("goto_file"),
-      ["<C-w><C-f>"]    = cb("goto_file_split"),
-      ["<C-w>gf"]       = cb("goto_file_tab"),
-      ["<leader>e"]     = cb("focus_files"),
-      ["<leader>td"]     = cb("toggle_files"),
+      { "n", "g!",            actions.options },
+      { "n", "<C-A-d>",       actions.open_in_diffview },
+      { "n", "y",             actions.copy_hash },
+      { "n", "zR",            actions.open_all_folds },
+      { "n", "zM",            actions.close_all_folds },
+      { "n", "j",             actions.next_entry },
+      { "n", "<down>",        actions.next_entry },
+      { "n", "k",             actions.prev_entry },
+      { "n", "<up>",          actions.prev_entry },
+      { "n", "<cr>",          actions.select_entry },
+      { "n", "o",             actions.select_entry },
+      { "n", "<2-LeftMouse>", actions.select_entry },
+      { "n", "<tab>",         actions.select_next_entry },
+      { "n", "<s-tab>",       actions.select_prev_entry },
+      { "n", "gf",            actions.goto_file_edit },
+      { "n", "<C-w><C-f>",    actions.goto_file_split },
+      { "n", "<C-w>gf",       actions.goto_file_tab },
+      { "n", "<leader>e",     actions.focus_files },
+      { "n", "<leader>td",    actions.toggle_files },
     },
     option_panel = {
-      ["<tab>"] = cb("select"),
-      ["<leader>q"]     = cb("close"),
+      { "n", "<tab>",      actions.select },
+      { "n", "<leader>q",  actions.close },
     },
   },
-}
+})
