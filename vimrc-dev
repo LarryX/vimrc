@@ -743,7 +743,7 @@ function! s:configure_plugins()
     endif
   endif
 
-  if IsLoad('denite.nvim')
+  if IsLoad('denite.nvim') && exists('*denite#custom#map')
     call denite#custom#map(
           \ 'insert',
           \ '<C-j>',
@@ -1265,29 +1265,29 @@ function! s:configure_plugins()
     set cscopetag                       " Use both cscope and ctag
     set cscopeverbose                   " Show msg when cscope db added
     set cscopetagorder=0                " Use cscope, not ctags for definition search first
+    set cscopequickfix=s-,g-,c-,t-,e-,f-,i-,d-
+
+    " auto load cscope.out
+    function! LoadCscope()
+        let db = findfile("cscope.out", ".;")    " find cscope.out
+        if (!empty(db))
+            let path = strpart(db, 0, match(db, "/cscope.out$"))
+            set nocsverb                         " suppress 'duplicate connection' error
+            exe "cs add " . db . " " . path
+            set csverb
+        endif
+    endfunction
+    autocmd BufRead,BufEnter *.cpp,*.hpp,*.go, call LoadCscope()
+
+    nmap <leader>gs :cs find s <C-R>=expand("<cword>")<cr><cr>:copen<cr>    " Find this C symbol
+    nmap <leader>gg :cs find g <C-R>=expand("<cword>")<cr><cr>:copen<cr>    " Find this definition
+    nmap <leader>gd :cs find d <C-R>=expand("<cword>")<cr><cr>:copen<cr>    " Find functions called by this function
+    nmap <leader>gc :cs find c <C-R>=expand("<cword>")<cr><cr>:copen<cr>    " Find functions calling this function
+    nmap <leader>gt :cs find t <C-R>=expand("<cword>")<cr><cr>:copen<cr>    " Find this text string
+    nmap <leader>ge :cs find e <C-R>=expand("<cword>")<cr><cr>:copen<cr>    " Find this egrep pattern
+    nmap <leader>gf :cs find f <C-R>=expand("<cfile>")<cr><cr>:copen<cr>    " Find this file
+    nmap <leader>gi :cs find i ^<C-R>=expand("<cfile>")<cr>$<cr>:copen<cr>  " Find files #including this file
+    nmap <leader>ga :cs find a <C-R>=expand("<cfile>")<cr><cr>:copen<cr>    " Find places where this symbol is assigned a value
   endif
-
-  " auto load cscope.out
-  function! LoadCscope()
-      let db = findfile("cscope.out", ".;")    " find cscope.out
-      if (!empty(db))
-          let path = strpart(db, 0, match(db, "/cscope.out$"))
-          set nocsverb                         " suppress 'duplicate connection' error
-          exe "cs add " . db . " " . path
-          set csverb
-      endif
-  endfunction
-  autocmd BufRead,BufEnter *.cpp,*.hpp,*.go, call LoadCscope()
-
-  set cscopequickfix=s-,g-,c-,t-,e-,f-,i-,d-
-  nmap <leader>gs :cs find s <C-R>=expand("<cword>")<cr><cr>:copen<cr>    " Find this C symbol
-  nmap <leader>gg :cs find g <C-R>=expand("<cword>")<cr><cr>:copen<cr>    " Find this definition
-  nmap <leader>gd :cs find d <C-R>=expand("<cword>")<cr><cr>:copen<cr>    " Find functions called by this function
-  nmap <leader>gc :cs find c <C-R>=expand("<cword>")<cr><cr>:copen<cr>    " Find functions calling this function
-  nmap <leader>gt :cs find t <C-R>=expand("<cword>")<cr><cr>:copen<cr>    " Find this text string
-  nmap <leader>ge :cs find e <C-R>=expand("<cword>")<cr><cr>:copen<cr>    " Find this egrep pattern
-  nmap <leader>gf :cs find f <C-R>=expand("<cfile>")<cr><cr>:copen<cr>    " Find this file
-  nmap <leader>gi :cs find i ^<C-R>=expand("<cfile>")<cr>$<cr>:copen<cr>  " Find files #including this file
-  nmap <leader>ga :cs find a <C-R>=expand("<cfile>")<cr><cr>:copen<cr>    " Find places where this symbol is assigned a value
 
 endfunction
