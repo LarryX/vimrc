@@ -96,7 +96,9 @@ endfun
 " encoding
 set encoding=utf-8
 set fileencodings=ucs-bom,utf-8,cp936,gb18030,big5,euc-jp,euc-kr,latin1
-set termencoding=utf-8
+if !has('nvim')
+  set termencoding=utf-8
+endif
 set ffs=unix,dos,mac
 set formatoptions+=m
 set formatoptions+=B
@@ -184,7 +186,7 @@ map <C-l> <C-W>l
 nnoremap <F2> :set nu! nu?<CR>
 nnoremap <F3> :set list! list?<CR>
 nnoremap <F4> :set wrap! wrap?<CR>
-set pastetoggle=<F5>
+nnoremap <F5> :set paste! paste?<CR>
 au InsertLeave * set nopaste
 nnoremap <F6> :exec exists('syntax_on') ? 'syn off' : 'syn on'<CR>
 

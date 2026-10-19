@@ -1,295 +1,199 @@
 # vimrc
-A powerful vim config file for developer.
-keymap similar with spacemacs
 
-## Description
+A Vim/Neovim config for development, with spacemacs-style `<Space>` keymaps.
+It targets **Neovim 0.11+** (tested on 0.12.6) and still loads in classic Vim,
+minus the LSP/completion part.
 
-* `init.vim`: vimrc for develop
-* `vimrc`: vimrc without any plugin
+## Files
 
-## Install | Upgrade
+| File | Purpose |
+|---|---|
+| `vimrc-dev` | Main config: plugins (vim-plug), settings and keymaps |
+| `lua/config/lsp.lua` | Neovim only: auto-completion (nvim-cmp + LuaSnip) and language servers (built-in LSP) |
+| `vimrc-server` | Lightweight config with no plugins, for servers |
+| `LearnVim.md` | Vim notes and a short tutorial (Chinese) |
 
-1. Prerequisites
+## Install
 
-    * vim compiled with python support. Check it with vim --version | grep +python ([neovim](https://neovim.io) is recommend)
-    * other dependencies:
-    ```bash
-    # mac
-    brew install ctags
-    brew install the_silver_searcher
-    sudo pip install pep8 flake8 pyflakes isort yapf
-
-    # ubuntu
-    sudo apt-get install exuberant-ctags git ack-grep
-    sudo apt-get install silversearcher-ag
-    sudo pip install pep8 flake8 pyflakes isort yapf
-
-    ```
-
-    * If you are using [neovim](https://neovim.io), python neovim package is need.
-    ```bash
-    sudo pip install neovim
-    ```
-    * backup your old `.vimrc` file (`$HOME/.config/nvim/init.vim` for neovim ) and `.vim` folder, create an empty `.vim` folder
-
-2. Clone this repo, and create a soft symbolic links which target the vimrc file which you want to use
-
-    eg:
+1. **Prerequisites**
 
     ```bash
-    git clone https://github.com/larryx/vimrc.git $HOME/repo/vimrc
-    # vim
-    ln -s $HOME/repo/vimrc/vimrc-dev $HOME/.vimrc
-    # neovim
-    ln -s $HOME/repo/vimrc/vimrc-dev $HOME/.config/nvim/init.vim
+    # Ubuntu
+    sudo apt install neovim git curl ripgrep universal-ctags jq xclip
+    pip install flake8 autopep8 isort       # Python lint/fix (used by ALE)
 
+    # Language servers for completion / go-to-definition (needs Node.js)
+    npm install -g pyright bash-language-server
+    sudo apt install clangd                 # optional, C/C++
     ```
-3. Open vim and it will continue the installation by itself. Wait for it to finish... and Done!
-   You now have your new shiny powerful vim :)
 
+    Ubuntu's `neovim` package may lag behind. For the latest release, unpack the
+    official build from <https://github.com/neovim/neovim/releases> into
+    `~/.local/nvim-<version>` and link `~/.local/bin/nvim` (and `vim`) to its `bin/nvim`.
+
+2. **Clone and link** (back up any existing `~/.vimrc`, `~/.vim` and `~/.config/nvim` first)
+
+    ```bash
+    git clone git@github.com:LarryX/vimrc.git ~/repo/vimrc
+    mkdir -p ~/.vim
+    ln -s ~/repo/vimrc/vimrc-dev ~/.vimrc            # Vim
+    ln -s ~/.vimrc ~/.vim/init.vim                   # Neovim reads ~/.vim via the next link
+    ln -s ~/.vim ~/.config/nvim
+    ln -s ~/repo/vimrc/lua ~/.vim/lua                # Lua modules (required for completion/LSP)
+    ```
+
+    For a server, link `vimrc-server` as `~/.vimrc` instead.
+
+3. **Start `nvim`.** vim-plug installs itself and the plugins on first run.
+   Afterwards use `:PlugUpdate` to update and `:PlugClean` to remove unused plugins.
+
+Check the setup with `:checkhealth`.
 
 ## Features
 
-a powerful vim config file, some of the keymap refer to spacemacs
+- **Fuzzy finding** (fzf.vim + ripgrep): files, buffers, recent files, lines, tags, commands, keymaps, with preview
+- **Auto-completion** (Neovim): language server, snippet, path and buffer-word suggestions as you type
+- **Code navigation** (Neovim): go to definition, hover docs, references, rename, code actions via the built-in LSP
+- **Linting/fixing** (ALE): flake8 and shellcheck; `<leader>af` runs fixers (trailing whitespace, autopep8, isort, jq)
+- **Git**: change signs in the gutter (gitgutter), status/diff/blame/log (fugitive)
+- **Editing**: surround, multiple cursors, expand selection, auto-close brackets, comment toggling, alignment
+- **Comfort**: persistent undo, restores cursor position and folds, creates missing directories on save,
+  `:w!!` saves as root, Chinese encoding detection
 
-### 1. *Usefull* small features
+## Keymaps
 
-* easy to *search/replace/highlight/grep* current word & selected text
-* support copy and paste with clipboard
-* easy to motion in file
-* good completion
-* toggle windows: help(<leader>hh), quickfix(<leader>q), Locate(<leader>l)
-* return to last edit position when opening files
-* convenient to insert date/time/calculate at insert mode
-* automatically jump to the last position of paste text
+`<leader>` is `<Space>`. Search every mapping with `<leader>sk`.
 
-### 2.  Hot Plugins and spacemacs-like Keymap
+### Files and buffers
+| Key | Action |
+|---|---|
+| `<leader>ff` | Find file in the current directory |
+| `<leader>fg` | Find git-tracked file |
+| `<leader>fr` | Recent files |
+| `<leader>fb`, `<leader>bb` | Open buffers |
+| `<leader>fe` | Find file in the current buffer's directory |
+| `<leader>ft`, `F2` | Toggle file tree (NERDTree) |
+| `<leader>fl` | Reveal the current file in the tree |
+| `<leader>bn` / `<leader>bp`, `]b` / `[b` | Next / previous buffer |
+| `<leader>b1`…`<leader>b0`, `Ngb` | Go to buffer N |
+| `<leader>b<Tab>` | Previous buffer |
+| `<leader>bd` / `<leader>ba` | Close buffer / close all buffers |
+| `<leader>bh` | Start screen (Startify) |
+| `<leader>cd` | Change directory to the current file's folder |
 
-* `:PlugStatus` to see which plugins included
-* `:Maps` to see keymap list
-* ...
+### Search and replace
+| Key | Action |
+|---|---|
+| `<leader>sg` | Live ripgrep in the project |
+| `,wr` | Ripgrep the word under the cursor |
+| `<leader>sw` | Grep the word / selection into the quickfix list |
+| `<leader>ss` | `:Search` (grep with your own arguments) |
+| `<leader>sl` / `<leader>sL` | Search lines in this buffer / all buffers |
+| `<leader>st` / `<leader>sT` | Tags in this buffer / project |
+| `<leader>sc` | Commands |
+| `<leader>sr` / `<leader>sR` | Replace the word / selection in the file (with / without confirm) |
+| `<leader>h` | Highlight the word / selection without jumping |
+| `*` / `#` (visual) | Search for the selected text |
+| `<leader><CR>` | Clear search highlighting |
+| `]q` / `[q` | Next / previous quickfix item |
+| `<leader>q` / `<leader>l` | Toggle quickfix / location list |
 
-### keymap
+### Code (Neovim, when a language server is attached)
+| Key | Action |
+|---|---|
+| `gd` / `gD` | Go to definition / declaration |
+| `K` | Hover documentation |
+| `grr` | References |
+| `<leader>rn` | Rename symbol |
+| `<leader>ca` | Code action |
+| `<C-]>` | Jump to definition (falls back to ctags) |
+| `<C-j>` / `<C-k>` | Next / previous ALE problem |
+| `<leader>af` | Run ALE fixers |
+| `F3` | Toggle the tag outline (Tagbar) |
 
-`<leader>` is `<Space>`, similar to spacemacs
+### Completion (insert mode, Neovim)
+| Key | Action |
+|---|---|
+| `Tab` / `Shift-Tab` | Next / previous item; expand a snippet or jump to its next field |
+| `Enter` | Accept the selected item |
+| `Ctrl-Space` / `Ctrl-e` | Open / close the menu |
+| `Ctrl-b` / `Ctrl-f` | Scroll documentation |
 
-    # Help
-    <leader>hh      toggle help window (or <F1>)
-    <leader>hk      search keymap
-    ... more comming
+Language-server diagnostics are hidden by default because ALE already lints;
+set `let g:lsp_diagnostics = 1` to show them too.
 
-    # Windows navigate
-    <leader>wj      navigate to down window
-    <leader>wk      navigate to up window
-    <leader>wh      navigate to left window
-    <leader>wl      navigate to right window
+### Git
+| Key | Action |
+|---|---|
+| `<leader>gs` | Status (`:Git`) |
+| `<leader>gd` | Diff split |
+| `<leader>gb` | Blame |
+| `<leader>gl` | Log of the current file |
+| `]h` / `[h`, `]c` / `[c` | Next / previous changed hunk |
 
-    # File open
-    <leader>ff      find file at pwd dir
-    <leader>fb      find in opened buffers
-    <leader>fr      find in most recently files
-    <leader>fe      find in the dir of current buffers
-    <leader>ft      toggle neotree
+### Windows and movement
+| Key | Action |
+|---|---|
+| `<leader>wh/wj/wk/wl` | Move to the left/down/up/right window |
+| `<leader>ws` / `<leader>wv` | Split horizontally / vertically |
+| `<leader>wc` / `<leader>wo` / `<leader>w=` | Close / only this window / equalize sizes |
+| `<leader>jl` / `<leader>jw` | Jump to a line / word (EasyMotion) |
+| `j` / `k` | Move by screen line (counts like `5j` still use real lines) |
+| `H` / `L` | Start / end of line |
+| `,z` | Close all folds except the current one |
+| `<leader>tt` | Open a terminal (`Esc` returns to normal mode) |
 
-    # Buffer navigate
-    <leader>bb      find in opened buffers
-    <leader>bn      next buffer
-    <leader>bp      previous buffer
-    <leader>bd      close the current buffer
-    <leader>ba      close all buffers
-    <leader>b<tab>  switch between most recently buffer
-    <leader>bN      jump to buffer N, for single digit
-    Ngb             jump to buffer N,
+### Editing
+| Key | Action |
+|---|---|
+| `<leader>yy` / `<leader>dd` | Yank / delete to the system clipboard |
+| `<leader>pp` / `<leader>pP` | Paste from the clipboard after / before |
+| `<leader>p0` | Paste the last yank (not the last delete) |
+| `<C-n>` | Multiple cursors on the word under the cursor |
+| `v` / `<C-v>` (visual) | Expand / shrink the selection |
+| `<` / `>` (visual) | Indent and keep the selection |
+| `ys`, `cs`, `ds` | Add / change / delete surroundings (vim-surround) |
+| `<leader>cc`, `<leader>c<Space>` | Comment / toggle comment (NERDCommenter) |
+| `t2` / `t4` | Indent width 2 / 4 |
+| `<leader>=` | Format the buffer as JSON |
+| `<leader>db` / `<leader>dm` | Delete trailing whitespace / `^M` |
+| `<leader>tl` | Toggle showing tabs and trailing spaces |
+| `:w!!` | Save as root |
 
-    # Search and replace
-    <leader>ss      search string in all files at pwd dir (-i for case-insensitively, -s for case-sensitively)
-    <leader>sw      search word at cursor or selected text in all files at pwd dir
-    <leader>sr      search and replace seleted text (need confirm)
-    <leader>sR      search and replace seleted text (not confirm)
-    <leader>st      search tag in current file
-    <leader>sT      search tag in all buffer
-    <leader>sl      search line
-    <leader>sc      search cmd
+### Insert mode
+| Key | Action |
+|---|---|
+| `<C-d><C-d>` | Insert the date (YYYY-MM-DD) |
+| `<C-t><C-t>` | Insert the time (HH:MM) |
+| `<C-c><C-c>` | Calculate an expression and insert the result |
 
-    # Jump
-    <leader>jl      jump to line
-    <leader>jw      jump to word
+### Help and config
+| Key | Action |
+|---|---|
+| `<leader>hh`, `F1` | Toggle help |
+| `<leader>sk` | Search keymaps |
+| `<leader>ev` / `<leader>sv` | Edit / reload the vimrc |
 
-    # yank and paste
-    <leader>pt      toggle paste mode
-    <leader>yy      copy to clipboard
-    <leader>dd      delete to clipboard
-    <leader>yy      copy current line to clipboard
-    <leader>pp      paste from clipboard
-    <leader>pP      paste before current cursor from clipboard
+## Differences from default Vim keys
 
-    # cscope
-    <leader>gs      Find this C symbol
-    <leader>gg      Find this definition
-    <leader>gd      Find functions called by this function
-    <leader>gc      Find functions calling this function
-    <leader>gt      Find this text string
-    <leader>ge      Find this egrep pattern
-    <leader>gf      Find this file
-    <leader>gi      Find files #including this file
-    <leader>ga      Find places where this symbol is assigned a value
+These mappings replace or delay built-in behavior:
 
-    # Edit
-    <leader>=       format json file
-    <leader>dm      delete all Windows ^M in file
-    <leader>db      delete all lined blank space
+- `H` / `L` go to line start/end (default: top/bottom of the screen); `p` leaves the cursor after the pasted text.
+- `t2` / `t4` take over the "till 2/4" motion; `,` waits briefly because it starts several mappings.
+- In visual mode, `v` expands and `<C-v>` shrinks the selection (start block selection from normal mode).
+- In insert mode, `<C-d>`, `<C-t>` and `<C-c>` wait briefly because the date/time/calculator mappings start with them.
+- On the command line, `<C-a>`/`<C-b>`/`<C-f>` move like emacs (start / left / right).
+- In a terminal window, `Esc` switches to normal mode; use `<C-c>` to cancel fzf.
 
-    # Insert Mode
-    <c-d><c-d>      insert date
-    <c-t><c-t>      insert time
-    <c-c><c-c>      insert calculate
+## Plugins
 
-### auto completion
+Navigation: nerdtree, fzf + fzf.vim, vim-easymotion, vim-startify, ListToggle ·
+Editing: vim-surround, vim-repeat, vim-visual-multi, vim-expand-region, delimitMate, tabular,
+vim-indent-object, nerdcommenter, fencview, suda.vim ·
+Completion (Neovim): nvim-cmp, cmp-nvim-lsp, cmp-buffer, cmp-path, LuaSnip, cmp_luasnip, vim-snippets ·
+UI: vim-airline, gruvbox · Development: ale, tagbar, vim-fugitive, vim-gitgutter ·
+Languages: vim-markdown, vim-markdown-toc, goyo.vim, SimpylFold
 
-### snipmate
+`:PlugStatus` lists what is installed.
 
-### git
-
-## screenshot:
-
-
-## Reference: Simple Vim Tutorial
-
-### VIM的模式
-
-- 命令模式 (Command Mode)
-- 编辑模式 (Insert Mode)
-- 可视模式 (View Mode)
-
-### 基本移动
-
-#### 以字为单位的移动
-
-- `h` 向左移动一个字
-- `j` 向下移动一行
-- `k` 向上
-- `l` 向右
-
-#### 以词为单位的移动
-
-- `w` 下一個word w(ord)
-- `W` 下一個word(跳过标点)
-- `b` 前一個word b(ackward)
-- `B` 前一个word(跳过标点)
-- `e` 跳到当前word的尾端 e(nd)
-
-#### 行移动
-
-- `0` 跳到当前行的开头
-- `^` 跳到当前行第一个非空字符
-- `$` 跳到行尾
-
-助记：0(第0个字符),`^`和`$`含义同正则表达式
-
-#### 段落移动
-- `{` 上一段(以空白行分隔)
-- `}` 下一段(以空白行分隔)
-- `%` 跳到当前对应的括号上(适用各种配对符号)
-
-#### 跳跃移动
-- `/xxxx` 搜索xxxx，然后可以用`n`下一个，`N`上一个移动
-- `#` 向前搜索光标当前所在的字
-- `*` 向后搜索光标当前所在的字
-- `fx` 在当前行移动到光标之后第一个字符x的位置 f(ind)x
-- `gd` 跳到光标所在位置词(word)的定义位置 g(o)d(efine)
-- `gg` 到文档顶部
-- `G` 到文档底部
-- `:x` 跳到第x行(x是行号)
-- `ctrl+d` 向下翻页 d(down)
-- `ctrl+u` 向上翻页 u(p)
-
-### 基本编辑
-#### 修改
-- `i` 在光标当前位置向前插入 i(nsert)
-- `I` 在本行第一个字符前插入
-- `a` 在光标当前位置向后插入 a(fter)
-- `A` 在本行末尾插入
-- `o` 向下插入一行
-- `O` 向上插入一行
-- `:w` 保存
-- `:q` 退出
-- `:wq` 保存并退出
-
-#### 删除
-- `x` 删除当前字符
-- `dd` 删除当前行 d(elete)
-- `dw` 删除当前光标下的词 d(elete)w(ord)
-
-#### 复制粘贴
-- `yy` 复制当前行 y(ank)
-- `yw` 复制当前光标下的词 y(ank)w(ord)
-- `p` 粘贴 p(aste)
-- `P` 粘贴在当前位置之前
-
-### 进阶操作
-
-仅介绍部分常用操作
-
-#### 重复操作
-因为VIM所有的操作都是原子化的，所以把这些操作程序化就非常简单了：
-
-- `5w` 相当于按五次`w`键；
-- `6j` 下移6行，相当于按六次j；
-- `3J` 大写J,本来是将下一行与当前行合并，加上数量，就是重复操作3次；
-- `6dw`和`d6w` 结果是一样，就是删除6个word；
-- 类推其它
-
-#### 高效编辑
-
-- `di"` 光标在""之间，则删除""之间的内容
-- `yi(` 光标在()之间，则复制()之间的内容
-- `vi[` 光标在[]之间，则选中[]之间的内容
-- 以上三种可以自由组合搭配，效率奇高，i(nner)
-- `dtx` 删除字符直到遇见光标之后的第一个`x`字符
-- `ytx` 复制字符直到遇见光标之后的第一个`x`字符
-
-#### 标记和宏(macro)
-
-- `ma` 将当前位置标记为a，26个字母均可做标记，`mb`、`mc`等等；
-- `'a` 跳转到a标记的位置；
-- 这是一组很好的文档内标记方法，在文档中跳跃编辑时很有用；
-- `qa` 将之后的所有键盘操作录制下来，直到再次在命令模式按下`q`，并存储在`a`中；
-- `@a` 执行刚刚记录在`a`里面的键盘操作；
-- `@@` 执行上一次的macro操作；
-
-例如下面一段宏可以复制当前含有数字的一行，并把数字递增。
-
-    qa
-    Y
-    p
-    <C-a>
-    q
-
-#### vimgrep
-
-vimgrep用于匹配查找，基本的用法看下面的例子就大概明白了
-
-`:vim /function demo/ *.c`          在当前目录的.c文件中，搜索function demo
-`:vim /function demo/ **/*.c`       在任意目录的.c文件中，搜索function demo
-`:vim /function demo/ **/*.{h,c}`   在任意目录的.c和.h文件中，搜索function demo
-`:vim /\cfunction demo/ **/*.c`     使用\c，不区分大小写
-`:vim /\Cfunction demo/ **/*.c`     使用\C，区分大小写
-`:vim /function demo/j *.c`         只更新quickfix，不跳转到第一个搜索结果
-`:vim /function demo/g *.c`         一行中若有多个匹配，每个都要单独显示一行
-
-### other tips
-
-`guu` – 把一行的文字变成全小写。或是【vu】
-`gUU` – 把一行的文件变成全大写。或是【VU】
-`ga` –  查看光标处字符的ascii码
-`g8` – 查看光标处字符的utf-8编码
-`gf`  – 打开光标处所指的文件 （这个命令在打到#include头文件时挺好用的，当然，仅限于有路径的）
-`>>` 右给它进当前行 `<<` 向左缩进当前行
-`=`  – 缩进当前行 （和上面不一样的是，它会对齐缩进）
-`=%` – 把光标位置移到语句块的括号上，然后按=%，缩进整个语句块（%是括号匹配）
-`G=gg` 或是 `gg=G`  – 缩进整个文件（G是到文件结尾，gg是到文件开头）
-`Ctrl + O` 向后回退你的光标移动
-`Ctrl + I` 向前追赶你的光标移动
-`:r!date` 插入日期
-`:g/^\n*$/d` 删除空行, 命令意义：正则匹配(行头+多个换行符+行尾)，d删除
-
+See [LearnVim.md](LearnVim.md) for Vim notes and a short tutorial.
