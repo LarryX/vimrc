@@ -77,11 +77,20 @@ Plug 'michaeljsmith/vim-indent-object'          " ii / ai indent text objects
 Plug 'scrooloose/nerdcommenter'                 " Code commenter
 Plug 'lambdalisue/suda.vim'                     " :w!! as root (sudo tee doesn't work in Neovim)
 
-" Snippets
-Plug 'tomtom/tlib_vim'
-Plug 'MarcWeber/vim-addon-mw-utils'
-Plug 'garbas/vim-snipmate'
-Plug 'honza/vim-snippets'
+" Completion + snippets
+Plug 'honza/vim-snippets'                       " Snippet collection (snipmate format)
+if has('nvim-0.11')
+  Plug 'hrsh7th/nvim-cmp'                       " Completion popup (config: "Completion & LSP" below)
+  Plug 'hrsh7th/cmp-nvim-lsp'                   "   source: language servers
+  Plug 'hrsh7th/cmp-buffer'                     "   source: words in open buffers
+  Plug 'hrsh7th/cmp-path'                       "   source: file paths
+  Plug 'L3MON4D3/LuaSnip'                       " Snippet engine, loads vim-snippets
+  Plug 'saadparwaiz1/cmp_luasnip'               "   source: snippets
+else
+  Plug 'tomtom/tlib_vim'
+  Plug 'MarcWeber/vim-addon-mw-utils'
+  Plug 'garbas/vim-snipmate'
+endif
 
 " User Interface
 Plug 'vim-airline/vim-airline'
@@ -244,8 +253,103 @@ let g:vim_markdown_conceal = 0
 let g:vim_markdown_conceal_code_blocks = 0
 let g:vim_markdown_frontmatter = 1
 
-" snipmate
+" snipmate (plain Vim only)
 let g:snipMate = { 'snippet_version' : 1 }
+
+" ============================================================================
+" Completion & LSP (Neovim 0.11+)
+"   Insert mode: <Tab>/<S-Tab> next/prev item (or jump in a snippet),
+"   <CR> accept the selected item, <C-Space> open menu, <C-e> close.
+"   Normal mode (when a language server is attached):
+"   gd definition, K hover docs, grr references, <leader>rn rename, <leader>ca code action.
+"   Servers: pyright (python), bash-language-server (sh), clangd (c/c++) if installed.
+"   Diagnostics stay with ALE; set g:lsp_diagnostics = 1 to also show the servers'.
+" ============================================================================
+if has('nvim-0.11')
+lua << LUA_END
+local ok_cmp, cmp = pcall(require, 'cmp')
+local ok_snip, luasnip = pcall(require, 'luasnip')
+if ok_cmp and ok_snip then
+  require('luasnip.loaders.from_snipmate').lazy_load()   -- honza/vim-snippets
+
+  local function has_words_before()
+    local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+    return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match('%s') == nil
+  end
+
+  cmp.setup({
+    snippet = { expand = function(args) luasnip.lsp_expand(args.body) end },
+    completion = { completeopt = 'menu,menuone,noinsert' },
+    mapping = cmp.mapping.preset.insert({
+      ['<C-Space>'] = cmp.mapping.complete(),
+      ['<C-e>']     = cmp.mapping.abort(),
+      ['<C-b>']     = cmp.mapping.scroll_docs(-4),
+      ['<C-f>']     = cmp.mapping.scroll_docs(4),
+      ['<CR>']      = cmp.mapping.confirm({ select = false }),
+      ['<Tab>'] = cmp.mapping(function(fallback)
+        if cmp.visible() then cmp.select_next_item()
+        elseif luasnip.expand_or_locally_jumpable() then luasnip.expand_or_jump()
+        elseif has_words_before() then cmp.complete()
+        else fallback() end
+      end, { 'i', 's' }),
+      ['<S-Tab>'] = cmp.mapping(function(fallback)
+        if cmp.visible() then cmp.select_prev_item()
+        elseif luasnip.locally_jumpable(-1) then luasnip.jump(-1)
+        else fallback() end
+      end, { 'i', 's' }),
+    }),
+    sources = cmp.config.sources(
+      { { name = 'nvim_lsp' }, { name = 'luasnip' }, { name = 'path' } },
+      { { name = 'buffer', option = { get_bufnrs = vim.api.nvim_list_bufs } } }
+    ),
+    formatting = {
+      format = function(entry, item)
+        item.menu = ({ nvim_lsp = '[LSP]', luasnip = '[Snip]', buffer = '[Buf]', path = '[Path]' })[entry.source.name]
+        return item
+      end,
+    },
+  })
+end
+
+-- Language servers (built-in LSP client; no nvim-lspconfig needed)
+local caps = vim.lsp.protocol.make_client_capabilities()
+local ok_lsp, cmp_lsp = pcall(require, 'cmp_nvim_lsp')
+if ok_lsp then caps = cmp_lsp.default_capabilities(caps) end
+vim.lsp.config('*', { capabilities = caps })
+
+local servers = {
+  pyright = { cmd = { 'pyright-langserver', '--stdio' }, filetypes = { 'python' },
+              root_markers = { 'pyproject.toml', 'setup.py', 'setup.cfg', 'requirements.txt', '.git' },
+              settings = { python = { analysis = { typeCheckingMode = 'basic' } } } },
+  bashls  = { cmd = { 'bash-language-server', 'start' }, filetypes = { 'sh', 'bash' },
+              root_markers = { '.git' } },
+  clangd  = { cmd = { 'clangd' }, filetypes = { 'c', 'cpp', 'cuda' },
+              root_markers = { 'compile_commands.json', '.clangd', '.git' } },
+}
+for name, cfg in pairs(servers) do
+  if vim.fn.executable(cfg.cmd[1]) == 1 then
+    vim.lsp.config(name, cfg)
+    vim.lsp.enable(name)
+  end
+end
+
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('LspCfg', { clear = true }),
+  callback = function(ev)
+    local client = vim.lsp.get_client_by_id(ev.data.client_id)
+    if vim.g.lsp_diagnostics ~= 1 and client then
+      -- ALE already lints; avoid showing the same problems twice
+      vim.diagnostic.enable(false, { bufnr = ev.buf, ns_id = vim.lsp.diagnostic.get_namespace(client.id) })
+    end
+    local o = { buffer = ev.buf, silent = true }
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, o)
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, o)
+    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, o)
+    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, o)
+  end,
+})
+LUA_END
+endif
 
 " airline
 let g:airline#extensions#tabline#enabled = 1    " show buffers on top; jump with 1gb, 2gb, ...
@@ -317,7 +421,7 @@ set laststatus=2
 set signcolumn=yes                    " keep text from shifting when signs appear
 set wildmenu
 set wildmode=longest:full,full
-set completeopt=menuone,noselect
+set completeopt=menuone,noselect      " built-in <C-n> menu (nvim-cmp sets its own)
 set shortmess-=S                      " show [n/m] search count (replaces IndexedSearch)
 set incsearch
 set hlsearch
