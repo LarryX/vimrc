@@ -1,16 +1,19 @@
 # vimrc
 
-A Vim/Neovim config for development, with spacemacs-style `<Space>` keymaps.
-It targets **Neovim 0.11+** (tested on 0.12.6) and still loads in classic Vim,
-minus the LSP/completion part.
+Vim/Neovim configs with spacemacs-style `<Space>` keymaps, in two flavors:
+
+- **`full.vim`**: the development setup with plugins, auto-completion and language servers.
+  Targets **Neovim 0.11+** (tested on 0.12.6); still loads in classic Vim, minus the LSP/completion part.
+- **`minimal.vim`**: a single plugin-free file for servers, containers and quick edits.
+  Works in any Vim or Neovim with nothing else installed.
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `vimrc-dev` | Main config: plugins (vim-plug), settings and keymaps |
-| `lua/config/lsp.lua` | Neovim only: auto-completion (nvim-cmp + LuaSnip) and language servers (built-in LSP) |
-| `vimrc-server` | Lightweight config with no plugins, for servers |
+| `full.vim` | Full config: plugins (vim-plug), settings and keymaps |
+| `lua/config/lsp.lua` | Used by `full.vim` on Neovim: auto-completion (nvim-cmp + LuaSnip) and language servers (built-in LSP) |
+| `minimal.vim` | Plugin-free config in one file; see [minimal.vim](#minimalvim) |
 | `LearnVim.md` | Vim notes and a short tutorial (Chinese) |
 
 ## Install
@@ -36,13 +39,16 @@ minus the LSP/completion part.
     ```bash
     git clone git@github.com:LarryX/vimrc.git ~/repo/vimrc
     mkdir -p ~/.vim
-    ln -s ~/repo/vimrc/vimrc-dev ~/.vimrc            # Vim
+    ln -s ~/repo/vimrc/full.vim ~/.vimrc             # Vim
     ln -s ~/.vimrc ~/.vim/init.vim                   # Neovim reads ~/.vim via the next link
     ln -s ~/.vim ~/.config/nvim
     ln -s ~/repo/vimrc/lua ~/.vim/lua                # Lua modules (required for completion/LSP)
     ```
 
-    For a server, link `vimrc-server` as `~/.vimrc` instead.
+    For the plugin-free setup, see [minimal.vim](#minimalvim) instead.
+
+    Upgrading from the old file names (`vimrc-dev`, `vimrc-server`)? Re-point the link:
+    `ln -sfn ~/repo/vimrc/full.vim ~/.vimrc`
 
 3. **Start `nvim`.** vim-plug installs itself and the plugins on first run.
    Afterwards use `:PlugUpdate` to update and `:PlugClean` to remove unused plugins.
@@ -60,7 +66,7 @@ Check the setup with `:checkhealth`.
 - **Comfort**: persistent undo, restores cursor position and folds, creates missing directories on save,
   `:w!!` saves as root, Chinese encoding detection
 
-## Keymaps
+## Keymaps (full.vim)
 
 `<leader>` is `<Space>`. Search every mapping with `<leader>sk`.
 
@@ -174,7 +180,7 @@ set `let g:lsp_diagnostics = 1` to show them too.
 | `<leader>sk` | Search keymaps |
 | `<leader>ev` / `<leader>sv` | Edit / reload the vimrc |
 
-## Differences from default Vim keys
+## Differences from default Vim keys (full.vim)
 
 These mappings replace or delay built-in behavior:
 
@@ -185,7 +191,41 @@ These mappings replace or delay built-in behavior:
 - On the command line, `<C-a>`/`<C-b>`/`<C-f>` move like emacs (start / left / right).
 - In a terminal window, `Esc` switches to normal mode; use `<C-c>` to cancel fzf.
 
-## Plugins
+## minimal.vim
+
+One file, no plugins, nothing to install: copy it to any machine.
+
+```bash
+# from a clone
+ln -s ~/repo/vimrc/minimal.vim ~/.vimrc
+# or on a machine without the repo
+curl -fLo ~/.vimrc https://raw.githubusercontent.com/LarryX/vimrc/master/minimal.vim
+```
+
+It sets line numbers, current-line highlight, smart-case incremental search, 4-space indent,
+indent-based folding (all open), CJK encoding detection, the `desert` colors and an informative
+status line. It returns to the last cursor position, adds a `#!` line to new `.sh`/`.py` files,
+and strips trailing spaces on save in code files.
+
+Shared with `full.vim`: `<Space>` leader, clipboard keys (`<leader>yy/dd/pp/pP/p0`), search and
+replace helpers (`<leader>sr/sR/sw/ss/h`, visual `*`/`#`), `<leader>=` JSON format,
+`<leader>db`/`<leader>dm`, and the insert-mode date/time/calculator keys.
+
+Specific to `minimal.vim`:
+
+| Key | Action |
+|---|---|
+| `<C-h/j/k/l>` | Move between windows |
+| `F2` / `F3` / `F4` / `F5` / `F6` | Toggle line numbers / invisible characters / wrap / paste mode / syntax |
+| `<leader>zz` | Close / open all folds |
+| `n` `N` `*` `#` | Search and keep the match centered |
+| `'` and `` ` `` | Swapped: `'a` jumps to the exact column of mark `a` |
+| `<C-a>` / `<C-e>` (command line) | Start / end of line |
+| `:w!!` | Save as root via `sudo tee` (classic Vim only) |
+
+Grep uses ripgrep, then ag, then plain grep, whichever is installed.
+
+## Plugins (full.vim)
 
 Navigation: nerdtree, fzf + fzf.vim, vim-easymotion, vim-startify, ListToggle ·
 Editing: vim-surround, vim-repeat, vim-visual-multi, vim-expand-region, delimitMate, tabular,

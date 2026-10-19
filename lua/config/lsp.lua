@@ -1,5 +1,5 @@
 -- Completion (nvim-cmp + LuaSnip) and language servers (built-in LSP, Neovim 0.11+).
--- Loaded from vimrc-dev with `lua require('config.lsp')` when running Neovim.
+-- Loaded from full.vim with `lua require('config.lsp')` when running Neovim.
 
 local ok_cmp, cmp = pcall(require, 'cmp')
 local ok_snip, luasnip = pcall(require, 'luasnip')

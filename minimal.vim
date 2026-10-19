@@ -1,9 +1,8 @@
 " ============================================================================
-" simple vim config without any plugins
+" minimal.vim: plugin-free Vim/Neovim config (servers, containers, quick edits)
 " Maintainer: AI
-"       
-" Create Date:
-"       02/18/2025
+" Modify Date:
+"       10/19/2026
 " ============================================================================
 
 " leader
@@ -211,12 +210,10 @@ vnoremap > >gv
 " y$ -> Y Make Y behave like other capitals
 map Y y$
 
-"Map ; to : and save a million keystrokes
-" ex mode commands made easy 用于快速进入命令行
-nnoremap ; :
-
-" save
-cmap w!! w !sudo tee >/dev/null %
+" save as root (classic Vim only: Neovim can't show sudo's password prompt)
+if !has('nvim')
+  cnoreabbrev <expr> w!! (getcmdtype() == ':' && getcmdline() ==# 'w!!') ? 'w !sudo tee >/dev/null %' : 'w!!'
+endif
 
 " command mode, ctrl-a to head， ctrl-e to tail
 cnoremap <C-j> <t_kd>
@@ -233,9 +230,13 @@ nmap <leader>pp "+p
 vmap <leader>pp "+p
 nmap <leader>pP "+P
 vmap <leader>pP "+P
-map <leader>p "0p
-au InsertLeave * set nopaste                    " Disbale paste mode when leaving insert mode
-nmap <leader>= <Esc>:%!python -m json.tool<cr>
+nnoremap <leader>p0 "0p
+xnoremap <leader>p0 "0p
+if executable('python3')
+  nnoremap <leader>= :%!python3 -m json.tool --indent 2<cr>
+elseif executable('jq')
+  nnoremap <leader>= :%!jq .<cr>
+endif
 
 " Delete the blank space or Windows ^M at trail of line
 func! DeleteTrailingWS()
@@ -248,12 +249,16 @@ nmap <leader>dm mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
 " autocmd BufWrite *.py :call DeleteTrailingWS()
 " autocmd BufWrite *.coffee :call DeleteTrailingWS()
 " insert some usefull text
-imap <silent> <C-D><C-D> <C-R>=strftime("%e %b %Y")<cr>
-imap <silent> <C-T><C-T> <C-R>=strftime("%l:%M %p")<cr>
-imap <silent> <C-C><C-C> <C-R>=string(eval(input("Calculate: ")))<cr>
+inoremap <silent> <C-D><C-D> <C-R>=strftime("%Y-%m-%d")<cr>
+inoremap <silent> <C-T><C-T> <C-R>=strftime("%H:%M")<cr>
+inoremap <silent> <C-C><C-C> <C-R>=string(eval(input("Calculate: ")))<cr>
 
-if executable('ag')             " The Silver Searcher
-  set grepprg=ag\ --nogroup\ --nocolor
+if executable('rg')
+  set grepprg=rg\ --vimgrep\ --smart-case\ --hidden\ --glob\ '!.git'
+  set grepformat=%f:%l:%c:%m
+elseif executable('ag')
+  set grepprg=ag\ --vimgrep
+  set grepformat=%f:%l:%c:%m
 else
   set grepprg=grep\ -nrI\ --exclude-dir={CVS,'.bzr','.git','.hg','.svn'}
 endif
@@ -301,15 +306,15 @@ vnoremap <leader>h :<C-U>call <SID>VSetSearch('/')<cr>/<C-R>/<cr>N
 " replace selected text
 vnoremap <leader>sr ""y:%s/<C-R>=escape(@", '/\')<cr>//gc<left><Left><Left>
 vnoremap <leader>sR ""y:%s/<C-R>=escape(@", '/\')<cr>//g<Left><Left>
-nnoremap <leader>sr :%s/<C-R><C-W>//gc"<left><left><left><left>
-nnoremap <leader>sR :%s/<C-R><C-W>//g"<left><left><left>
+nnoremap <leader>sr :%s/\<<C-R><C-W>\>//gc<Left><Left><Left>
+nnoremap <leader>sR :%s/\<<C-R><C-W>\>//g<Left><Left>
 
 " grep the word at cursor in current dir
-nnoremap <leader>sw :grep! "\b<C-R><C-W>\b"<cr>:cw<cr>
-vnoremap <leader>sw y:grep! '<C-R>"' .<cr>:cw<cr>
+nnoremap <silent> <leader>sw :silent grep! -w <C-R><C-W><cr>:cwindow<cr>:redraw!<cr>
+xnoremap <silent> <leader>sw y:silent grep! -F -- <C-R>=shellescape(@")<cr><cr>:cwindow<cr>:redraw!<cr>
 
 command! -nargs=+ -complete=file -bar Search silent! grep! <args>|cwindow|redraw!
-nnoremap <leader>ss :Search<Space>''<left>
+nnoremap <leader>ss :Search<Space>
 
 vnoremap <silent> y y`]
 vnoremap <silent> p p`]
