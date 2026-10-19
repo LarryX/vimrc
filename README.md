@@ -156,11 +156,11 @@ set `let g:lsp_diagnostics = 1` to show them too.
 | `<leader>pp` / `<leader>pP` | Paste from the clipboard after / before |
 | `<leader>p0` | Paste the last yank (not the last delete) |
 | `<C-n>` | Multiple cursors on the word under the cursor |
-| `v` / `<C-v>` (visual) | Expand / shrink the selection |
+| `v` / `-` (visual) | Expand / shrink the selection |
 | `<` / `>` (visual) | Indent and keep the selection |
 | `ys`, `cs`, `ds` | Add / change / delete surroundings (vim-surround) |
 | `<leader>cc`, `<leader>c<Space>` | Comment / toggle comment (NERDCommenter) |
-| `t2` / `t4` | Indent width 2 / 4 |
+| `<leader>t2` / `<leader>t4` | Indent width 2 / 4 |
 | `<leader>=` | Format the buffer as JSON |
 | `<leader>db` / `<leader>dm` | Delete trailing whitespace / `^M` |
 | `<leader>tl` | Toggle showing tabs and trailing spaces |
@@ -185,8 +185,8 @@ set `let g:lsp_diagnostics = 1` to show them too.
 These mappings replace or delay built-in behavior:
 
 - `H` / `L` go to line start/end (default: top/bottom of the screen); `p` leaves the cursor after the pasted text.
-- `t2` / `t4` take over the "till 2/4" motion; `,` waits briefly because it starts several mappings.
-- In visual mode, `v` expands and `<C-v>` shrinks the selection (start block selection from normal mode).
+- `,` waits briefly because it starts several mappings.
+- In visual mode, `v` expands and `-` shrinks the selection (`<C-v>` still switches to block selection).
 - In insert mode, `<C-d>`, `<C-t>` and `<C-c>` wait briefly because the date/time/calculator mappings start with them.
 - On the command line, `<C-a>`/`<C-b>`/`<C-f>` move like emacs (start / left / right).
 - In a terminal window, `Esc` switches to normal mode; use `<C-c>` to cancel fzf.

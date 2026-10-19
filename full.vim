@@ -69,7 +69,7 @@ Plug 'mhinz/vim-startify'                       " Start screen with recent files
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'                         " Make '.' repeat plugin actions (surround, ...)
 Plug 'mg979/vim-visual-multi'                   " Multiple cursors (<C-n>), replaces vim-multiple-cursors
-Plug 'terryma/vim-expand-region'                " v/<C-v> in visual mode to grow/shrink selection
+Plug 'terryma/vim-expand-region'                " v/- in visual mode to grow/shrink selection
 Plug 'Raimondi/delimitMate'                     " Auto-close quotes and brackets
 Plug 'godlygeek/tabular'                        " Align text
 Plug 'mbbill/fencview'                          " Auto-detect Chinese file encodings
@@ -201,7 +201,8 @@ let g:EasyMotion_smartcase = 1
 
 " Expand region
 xmap v <Plug>(expand_region_expand)
-xmap <C-v> <Plug>(expand_region_shrink)
+" shrink with -, so <C-v> keeps switching to block selection
+xmap - <Plug>(expand_region_shrink)
 
 " delimitMate
 let delimitMate_quotes = "\" ' `"
@@ -431,8 +432,8 @@ endfunction
 nnoremap <silent> <F1> :call ToggleHelp()<cr>
 nnoremap <silent> <leader>hh :call ToggleHelp()<cr>
 
-nnoremap t2 :setlocal ts=2 sts=2 sw=2 expandtab<cr>
-nnoremap t4 :setlocal ts=4 sts=4 sw=4 expandtab<cr>
+nnoremap <leader>t2 :setlocal ts=2 sts=2 sw=2 expandtab<cr>
+nnoremap <leader>t4 :setlocal ts=4 sts=4 sw=4 expandtab<cr>
 
 " Edit / reload this config
 nnoremap <leader>ev :e $MYVIMRC<cr>
